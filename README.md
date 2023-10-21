@@ -2,6 +2,9 @@
 
 Easily define Python functions for structured output from GPT-4.
 
+:warning: This was primarily written for personal use, and is neither well-tested nor documented. There are similar and much better projects out there, such as [magentic](https://github.com/jackmpcollins/magentic).
+
+
 ## Install
 
 ```
@@ -55,7 +58,3 @@ travel_fn("londres to paris")
  'duration': '2 hours 20 minutes'
 }
 ```
-
-## Notes
-
-:warning: This was primarily written for personal use, and is neither well-tested nor documented. There are similar and much better projects out there, such as [magentic](https://github.com/jackmpcollins/magentic).
