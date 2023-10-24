@@ -12,29 +12,32 @@ class AutoFunc():
         self.model = model
         self.temperature = temperature
         self.response_model = response_model
-        self.schema = response_model.model_json_schema() if response_model else {
-            'properties': {'response_str': {'title': 'Response', 'type': 'string'}},
-            'required': ['response_str'],
-            'title': 'StrResponse',
-            'type': 'object'
-        }
+        self.schema = response_model.model_json_schema() if response_model else None
 
     def __call__(self, input):
-        response = openai.ChatCompletion.create(
-            model=self.model,
-            temperature=self.temperature,
-            messages=[
-               {"role": "system", "content": self.system_instruction},
-               {"role": "user", "content": input}
+        params = {
+            'model': self.model,
+            'temperature': self.temperature,
+            'messages': [
+                {"role": "system", "content": self.system_instruction},
+                {"role": "user", "content": input},
             ],
-            functions=[
-                {
-                  "name": "fn",
-                  "description": "GPT function",
-                  "parameters": self.schema
-                }
-            ],
-            function_call={"name": "fn"}
-        )
-        response_args = json.loads(response.choices[0]["message"]["function_call"]["arguments"])
-        return response_args if self.response_model else response_args['response_str']
+        }
+
+        # Use function calling only if a schema is provided
+        if self.schema:
+            params |= {
+                'functions': [
+                    {
+                      "name": "fn",
+                      "description": "GPT function",
+                      "parameters": self.schema
+                    }
+                ],
+                'function_call': {"name": "fn"}
+            }
+
+        response = openai.ChatCompletion.create(**params)
+        return response.choices[0]["message"]["content"] \
+            if self.schema is None \
+            else json.loads(response.choices[0]["message"]["function_call"]["arguments"])
